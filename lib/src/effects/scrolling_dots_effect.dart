@@ -1,6 +1,7 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart';
+import 'package:smooth_page_indicator/src/effects/customizable_effect.dart';
 import 'package:smooth_page_indicator/src/painters/indicator_painter.dart';
 import 'package:smooth_page_indicator/src/painters/scrolling_dots_painter.dart';
 import 'package:smooth_page_indicator/src/painters/scrolling_dots_painter_with_fixed_center.dart';
@@ -26,12 +27,20 @@ class ScrollingDotsEffect extends BasicIndicatorEffect {
   /// if True the old center dot style will be used
   final bool fixedCenter;
 
+  /// Holds painting decoration for inactive dots
+  final DotDecoration dotDecoration;
+
+  /// Holds painting decoration for active dots
+  final DotDecoration activeDotDecoration;
+
   /// Default constructor
   const ScrollingDotsEffect({
     this.activeStrokeWidth = 1.5,
     this.activeDotScale = 1.3,
     this.maxVisibleDots = 5,
     this.fixedCenter = false,
+    required this.dotDecoration,
+    required this.activeDotDecoration,
     double offset = 16.0,
     double dotWidth = 16.0,
     double dotHeight = 16.0,
@@ -57,11 +66,29 @@ class ScrollingDotsEffect extends BasicIndicatorEffect {
   @override
   Size calculateSize(int count) {
     /// Add the scaled dot width to our size calculation
-    var width = (dotWidth + spacing) * (min(count, maxVisibleDots));
-    if (fixedCenter && count <= maxVisibleDots) {
-      width = ((count * 2) - 1) * (dotWidth + spacing);
-    }
-    return Size(width, dotHeight * activeDotScale);
+    // var width = (dotWidth + spacing) * (min(count, maxVisibleDots));
+    // if (fixedCenter && count <= maxVisibleDots) {
+    //   width = ((count * 2) - 1) * (dotWidth + spacing);
+    // }
+    // return Size(width, dotHeight * activeDotScale);
+
+    final activeDotWidth =
+        activeDotDecoration.width + activeDotDecoration.dotBorder.neededSpace;
+    final dotWidth = dotDecoration.width + dotDecoration.dotBorder.neededSpace;
+
+    final maxWidth =
+        dotWidth * (count - 1) + (spacing * count) + activeDotWidth;
+
+    final offsetSpace =
+        (dotDecoration.verticalOffset - activeDotDecoration.verticalOffset)
+            .abs();
+    final maxHeight = max(
+      dotDecoration.height + offsetSpace + dotDecoration.dotBorder.neededSpace,
+      activeDotDecoration.height +
+          offsetSpace +
+          activeDotDecoration.dotBorder.neededSpace,
+    );
+    return Size(maxWidth, maxHeight);
   }
 
   @override
